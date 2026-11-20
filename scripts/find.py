@@ -34,6 +34,16 @@ def build_input(work: Path) -> str:
         file = work / "repo" / path
         if path.endswith(".swift") and file.is_file():
             parts.append(f"## Full file: {path}\n```swift\n{file.read_text()[:MAX_FILE_CHARS]}\n```")
+    ci = work / "ci.txt"
+    if ci.exists() and ci.read_text().strip():
+        parts.append(f"## CI checks on this commit\n```\n{ci.read_text()[:3000]}\n```")
+    discussion = work / "discussion.json"
+    if discussion.exists() and json.loads(discussion.read_text()):
+        parts.append(
+            "## Earlier review discussion on this PR (do not repeat a point the author "
+            "answered with a reason; respect decisions the maintainers made)\n"
+            f"```json\n{discussion.read_text()[:20_000]}\n```"
+        )
     build_log = work / "build.log"
     if build_log.exists():
         parts.append(f"## Build log\n```\n{build_log.read_text()[-20_000:]}\n```")
@@ -43,12 +53,14 @@ def build_input(work: Path) -> str:
     return "\n\n".join(parts)
 
 
-FINDERS = ["concurrency", "correctness", "modernity", "security", "cost-ux"]
+FINDERS = ["concurrency", "correctness", "modernity", "security", "cost-ux", "tests", "consistency"]
 
 
 def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, int]:
     """Run one finder and write its files. Return (kept, rejected) counts."""
-    system = (ROOT / "prompts" / f"finder-{name}.md").read_text()
+    system = (ROOT / "prompts" / "finder-common.md").read_text() + "\n\n" + (
+        ROOT / "prompts" / f"finder-{name}.md"
+    ).read_text()
     answer = extract_json(ask(model, system, build_input(work)))
     schema = load_schema("finding")
     visible = diff_lines((work / "pr.diff").read_text())
