@@ -159,7 +159,11 @@
           "file": "Sources/WisprCore/Services/ProgressUpdate.swift",
           "line": 58,
           "window": 15,
-          "note": "new files are not compiled by the Xcode targets"
+          "note": "new files are not compiled by the Xcode targets",
+          "also_files": [
+            "Sources/WisprCLI/DurationFormat.swift",
+            "Sources/WisprCLI/ProgressReporter.swift"
+          ]
         }
       ]
     },

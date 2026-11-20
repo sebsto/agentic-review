@@ -1,5 +1,7 @@
 # REVIEW.md (example, copy into a repo and edit)
 
+These are one project's rules (Soto). Keep only what your repo wants.
+
 What matters here:
 - Swift 6 language mode, strict concurrency. Prefer `Mutex` from
   `Synchronization` over lock wrappers.
