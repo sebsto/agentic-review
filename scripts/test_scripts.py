@@ -7,7 +7,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import mode_for, parse_pr_url  # noqa: E402
+from llm import extract_json  # noqa: E402
 from post import diff_lines  # noqa: E402
+from validate import check, load_schema  # noqa: E402
 
 DIFF = """diff --git a/A.swift b/A.swift
 --- a/A.swift
@@ -39,6 +41,20 @@ class Tests(unittest.TestCase):
             diff_lines(DIFF),
             {("A.swift", 1), ("A.swift", 2), ("A.swift", 3), ("A.swift", 4)},
         )
+
+    def test_extract_json(self) -> None:
+        self.assertEqual(extract_json('```json\n[{"a": 1}]\n```'), [{"a": 1}])
+        self.assertEqual(extract_json("[]"), [])
+
+    def test_finding_schema(self) -> None:
+        schema = load_schema("finding")
+        good = {"id": "c1", "finder": "concurrency", "file": "A.swift", "line": 3,
+                "title": "t", "explanation": "e", "evidence": "x"}
+        self.assertEqual(check(good, schema), [])
+        self.assertTrue(check({**good, "finder": "style"}, schema))
+        self.assertTrue(check({**good, "line": 0}, schema))
+        self.assertTrue(check({**good, "extra": 1}, schema))
+        self.assertTrue(check({k: v for k, v in good.items() if k != "evidence"}, schema))
 
 
 if __name__ == "__main__":
