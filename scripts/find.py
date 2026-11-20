@@ -43,14 +43,11 @@ def build_input(work: Path) -> str:
     return "\n\n".join(parts)
 
 
-def main() -> int:
-    if len(sys.argv) < 3:
-        print(__doc__)
-        return 2
-    work = Path(sys.argv[1])
-    name = sys.argv[2]
-    model = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_MODEL
+FINDERS = ["concurrency", "correctness", "modernity", "security", "cost-ux"]
 
+
+def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, int]:
+    """Run one finder and write its files. Return (kept, rejected) counts."""
     system = (ROOT / "prompts" / f"finder-{name}.md").read_text()
     answer = extract_json(ask(model, system, build_input(work)))
     schema = load_schema("finding")
@@ -67,7 +64,17 @@ def main() -> int:
             kept.append(item)
     (work / f"findings-{name}.json").write_text(json.dumps(kept, indent=2))
     (work / f"findings-{name}.rejected.json").write_text(json.dumps(rejected, indent=2))
-    print(f"{name}: kept {len(kept)}, rejected {len(rejected)}")
+    return len(kept), len(rejected)
+
+
+def main() -> int:
+    if len(sys.argv) < 3:
+        print(__doc__)
+        return 2
+    kept, rejected = run_finder(
+        Path(sys.argv[1]), sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else DEFAULT_MODEL
+    )
+    print(f"{sys.argv[2]}: kept {kept}, rejected {rejected}")
     return 0
 
 
