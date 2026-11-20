@@ -1,0 +1,20 @@
+# REVIEW.md (example, copy into a repo and edit)
+
+What matters here:
+- Swift 6 language mode, strict concurrency. Prefer `Mutex` from
+  `Synchronization` over lock wrappers.
+- Swift Testing only in new tests (`@Suite`, `@Test`, `#expect`), never XCTest.
+  Use `.disabled(if:)` instead of `guard ... return`.
+- No `DateFormatter`; use `FormatStyle`. Prefer `FoundationEssentials`.
+- Public error and policy types are structs, not enums, so cases can be added.
+- Never merge with a branch or path dependency in `Package.swift`.
+- Keep existing comments unless they are wrong. No development history in
+  comments, specs or test names.
+- Do not commit tool folders (`.kiro`, `.idea`, build output).
+- Reuse an existing test before adding a new one.
+
+Skip:
+- Style the formatter fixes.
+- Edge cases on test accounts with more than a page of results.
+
+Always give file and line, and the code path that proves it.

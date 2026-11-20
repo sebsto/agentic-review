@@ -7,7 +7,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import mode_for, parse_pr_url  # noqa: E402
+from classify import added_lines  # noqa: E402
 from llm import extract_json  # noqa: E402
+from merge import merge  # noqa: E402
+from report import build_review  # noqa: E402
+from verify import decide  # noqa: E402
 from post import diff_lines  # noqa: E402
 from validate import check, load_schema  # noqa: E402
 
@@ -55,6 +59,35 @@ class Tests(unittest.TestCase):
         self.assertTrue(check({**good, "line": 0}, schema))
         self.assertTrue(check({**good, "extra": 1}, schema))
         self.assertTrue(check({k: v for k, v in good.items() if k != "evidence"}, schema))
+
+    def test_added_lines(self) -> None:
+        self.assertEqual(added_lines(DIFF), {("A.swift", 2), ("A.swift", 3)})
+
+    def test_merge_dedupes_and_keeps_longest_evidence(self) -> None:
+        def item(i, line, title, evidence):
+            return {"id": i, "finder": "security", "file": "A.swift", "line": line,
+                    "title": title, "explanation": "e", "evidence": evidence}
+        merged = merge([
+            item("a-1", 10, "token logged in plain text", "short"),
+            item("b-1", 11, "plain text token logged", "much longer evidence"),
+            item("a-1", 40, "other problem", "x"),
+        ])
+        self.assertEqual(len(merged), 2)
+        self.assertEqual(merged[0]["evidence"], "much longer evidence")
+        self.assertEqual(len({m["id"] for m in merged}), 2)
+
+    def test_quorum(self) -> None:
+        self.assertTrue(decide([{"real": True}, {"real": True}, {"real": False}]))
+        self.assertFalse(decide([{"real": True}, {"real": False}, {"real": False}]))
+
+    def test_report(self) -> None:
+        self.assertEqual(build_review([])["body"], "No issues found.")
+        finding = {"id": "x", "file": "A.swift", "line": 2, "title": "t", "explanation": "e",
+                   "suggested_fix": "fix()", "class": "blocking"}
+        review = build_review([finding, {**finding, "id": "y", "class": "pre-existing"}])
+        self.assertTrue(review["body"].startswith("1 blocking, 0 nit, 1 pre-existing."))
+        self.assertEqual(len(review["comments"]), 1)
+        self.assertIn("```suggestion\nfix()\n```", review["comments"][0]["body"])
 
 
 if __name__ == "__main__":

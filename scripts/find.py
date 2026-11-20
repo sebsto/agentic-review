@@ -34,6 +34,16 @@ def build_input(work: Path) -> str:
         file = work / "repo" / path
         if path.endswith(".swift") and file.is_file():
             parts.append(f"## Full file: {path}\n```swift\n{file.read_text()[:MAX_FILE_CHARS]}\n```")
+    ci = work / "ci.txt"
+    if ci.exists() and ci.read_text().strip():
+        parts.append(f"## CI checks on this commit\n```\n{ci.read_text()[:3000]}\n```")
+    discussion = work / "discussion.json"
+    if discussion.exists() and json.loads(discussion.read_text()):
+        parts.append(
+            "## Earlier review discussion on this PR (do not repeat a point the author "
+            "answered with a reason; respect decisions the maintainers made)\n"
+            f"```json\n{discussion.read_text()[:20_000]}\n```"
+        )
     build_log = work / "build.log"
     if build_log.exists():
         parts.append(f"## Build log\n```\n{build_log.read_text()[-20_000:]}\n```")
@@ -43,15 +53,14 @@ def build_input(work: Path) -> str:
     return "\n\n".join(parts)
 
 
-def main() -> int:
-    if len(sys.argv) < 3:
-        print(__doc__)
-        return 2
-    work = Path(sys.argv[1])
-    name = sys.argv[2]
-    model = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_MODEL
+FINDERS = ["concurrency", "correctness", "modernity", "security", "cost-ux", "tests", "consistency"]
 
-    system = (ROOT / "prompts" / f"finder-{name}.md").read_text()
+
+def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, int]:
+    """Run one finder and write its files. Return (kept, rejected) counts."""
+    system = (ROOT / "prompts" / "finder-common.md").read_text() + "\n\n" + (
+        ROOT / "prompts" / f"finder-{name}.md"
+    ).read_text()
     answer = extract_json(ask(model, system, build_input(work)))
     schema = load_schema("finding")
     visible = diff_lines((work / "pr.diff").read_text())
@@ -67,7 +76,17 @@ def main() -> int:
             kept.append(item)
     (work / f"findings-{name}.json").write_text(json.dumps(kept, indent=2))
     (work / f"findings-{name}.rejected.json").write_text(json.dumps(rejected, indent=2))
-    print(f"{name}: kept {len(kept)}, rejected {len(rejected)}")
+    return len(kept), len(rejected)
+
+
+def main() -> int:
+    if len(sys.argv) < 3:
+        print(__doc__)
+        return 2
+    kept, rejected = run_finder(
+        Path(sys.argv[1]), sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else DEFAULT_MODEL
+    )
+    print(f"{sys.argv[2]}: kept {kept}, rejected {rejected}")
     return 0
 
 
