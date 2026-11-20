@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Finding",
+  "description": "One possible issue reported by a finder agent.",
+  "type": "object",
+  "required": ["id", "finder", "file", "line", "title", "explanation", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string" },
+    "finder": {
+      "enum": ["correctness", "modernity", "concurrency", "security", "cost-ux"]
+    },
+    "file": { "type": "string" },
+    "line": { "type": "integer", "minimum": 1 },
+    "title": { "type": "string", "maxLength": 120 },
+    "explanation": { "type": "string" },
+    "evidence": {
+      "type": "string",
+      "description": "Code trace, compiler output or failing test that shows the issue."
+    },
+    "suggested_fix": { "type": "string", "description": "Replacement code for a GitHub suggestion block." }
+  }
+}

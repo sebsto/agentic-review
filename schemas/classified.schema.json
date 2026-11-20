@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClassifiedFinding",
+  "description": "A verified finding with its class.",
+  "type": "object",
+  "required": ["finding_id", "class", "reason"],
+  "additionalProperties": false,
+  "properties": {
+    "finding_id": { "type": "string" },
+    "class": { "enum": ["blocking", "nit", "pre-existing"] },
+    "reason": { "type": "string" }
+  }
+}

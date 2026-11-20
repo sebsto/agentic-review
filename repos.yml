@@ -1,0 +1,24 @@
+# Per-repo posting mode.
+#   auto  : the pipeline posts the review by itself.
+#   draft : the pipeline stops and shows the review; a person approves before it is posted.
+# Any repo not listed uses `default`.
+default:
+  mode: draft
+
+repos:
+  sebsto/orthanc:
+    mode: auto
+  sebsto/odvpn:
+    mode: auto
+  sebsto/wispr:
+    mode: auto
+  maxi80-com/maxi80-backend-swift:
+    mode: auto
+  maxi80-com/maxi80-app:
+    mode: auto
+  maxi80-com/maxi80-ios-swift:
+    mode: auto
+  sebsto/soto:
+    mode: draft
+  sebsto/soto-core:
+    mode: draft

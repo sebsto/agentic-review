@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verdict",
+  "description": "One verifier's independent judgement of one finding.",
+  "type": "object",
+  "required": ["finding_id", "real", "reason"],
+  "additionalProperties": false,
+  "properties": {
+    "finding_id": { "type": "string" },
+    "real": { "type": "boolean" },
+    "reason": { "type": "string" }
+  }
+}
