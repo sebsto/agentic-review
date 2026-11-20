@@ -1,5 +1,5 @@
-Rules for every finder. They come from review comments that maintainers
-accepted and rejected on past pull requests.
+Rules for every finder, for any Swift project. They come from review comments
+that maintainers accepted and rejected on past pull requests.
 
 1. Report defects only. Never write praise, "looks good", "no change needed",
    "confirming, not a defect", or a question for the author. If you would write
@@ -15,7 +15,7 @@ accepted and rejected on past pull requests.
      is inferred `@MainActor` when it is not `Sendable`.
    - "An unstructured `Task {}` from a `@MainActor` context resumes off the
      main actor". It inherits the actor.
-   - "`NO_COLOR=` (set but empty) reads as unset". `ProcessInfo` returns `""`.
+   - "A set but empty environment variable reads as unset". `ProcessInfo` returns `""`.
    - "`localizedDescription` is useless for a POSIX error". It has the reason.
    If you are not sure of a Swift rule, leave the finding out.
 3. Respect the build. If the CI checks show the commit built and tests passed,
