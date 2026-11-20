@@ -1,0 +1,45 @@
+[
+  {
+    "id": "bug-orthanc-10",
+    "pass": false,
+    "defects": 5,
+    "found_by_finders": 0,
+    "reported": 0,
+    "missed": [
+      "unauthenticated error body echoes the raw request path",
+      "`node --check` parses only its first file argument",
+      "HttpApi has no throttling",
+      "one allowed origin while the site answers on two",
+      "API_BASE pinned to the apex origin"
+    ],
+    "kept": [],
+    "failed_finders": []
+  },
+  {
+    "id": "bug-wispr-113",
+    "pass": false,
+    "defects": 1,
+    "found_by_finders": 0,
+    "reported": 0,
+    "missed": [
+      "new files are not compiled by the Xcode targets"
+    ],
+    "kept": [],
+    "failed_finders": []
+  },
+  {
+    "id": "bug-maxi80-backend-3",
+    "pass": true,
+    "defects": 1,
+    "found_by_finders": 1,
+    "reported": 1,
+    "missed": [],
+    "kept": [
+      "template.yaml:209 CloudFront S3 origin uses a dotted bucket name, which the S3 wildcard "
+    ],
+    "failed_finders": [
+      "concurrency",
+      "modernity"
+    ]
+  }
+]

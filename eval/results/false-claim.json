@@ -1,0 +1,101 @@
+[
+  {
+    "id": "claim-wispr-113-1",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "claim-wispr-113-2",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "claim-wispr-113-3",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "claim-wispr-111-4",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "claim-maxi80-app-78-5",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "claim-maxi80-app-69-6",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "claim-maxi80-app-58-7",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": true
+  },
+  {
+    "id": "intent-wispr-109",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      false
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": false
+  },
+  {
+    "id": "intent-maxi80-app-79",
+    "pass": true,
+    "votes": [
+      false,
+      false,
+      true
+    ],
+    "failed_verifiers": 0,
+    "in_prompt": false
+  }
+]
