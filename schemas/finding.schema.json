@@ -8,7 +8,7 @@
   "properties": {
     "id": { "type": "string" },
     "finder": {
-      "enum": ["correctness", "modernity", "concurrency", "security", "cost-ux"]
+      "enum": ["correctness", "modernity", "concurrency", "security", "cost-ux", "tests", "consistency"]
     },
     "file": { "type": "string" },
     "line": { "type": "integer", "minimum": 1 },

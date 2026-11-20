@@ -1,0 +1,16 @@
+{
+  "description": "Findings maintainers rejected after checking. A reviewer run must NOT report these. Each case is a false claim, with the rule that makes it wrong. Used by the step 5 eval.",
+  "cases": [
+    {"repo": "maxi80-com/maxi80-app", "claim": "`[String: String?]` assigning nil removes the key", "why_wrong": "With an optional value type the subscript setter takes `String??`; `nil` assigned as a typed optional stores a nil value."},
+    {"repo": "maxi80-com/maxi80-app", "claim": "`AnyHashable as? String` does not unwrap the boxed value", "why_wrong": "The cast unwraps the boxed value; verified empirically."},
+    {"repo": "maxi80-com/maxi80-app", "claim": "Callbacks passed to a `@MainActor` function may run off the main actor", "why_wrong": "A non-Sendable closure written in a `@MainActor` context is inferred `@MainActor`."},
+    {"repo": "maxi80-com/maxi80-app", "claim": "`Task {}` created from `@MainActor` resumes on a non-main executor", "why_wrong": "An unstructured Task inherits the actor isolation of its creator."},
+    {"repo": "maxi80-com/maxi80-app", "claim": "Placeholder cover should use the injected feature flags, not the shared store", "why_wrong": "A human review on the same PR asked for this design."},
+    {"repo": "sebsto/wispr", "claim": "`ProgressStyle` is not Equatable so `==` fails to compile", "why_wrong": "Enums without payloads are implicitly Equatable; CI built the commit."},
+    {"repo": "sebsto/wispr", "claim": "`public` member of an internal type is rejected", "why_wrong": "It is legal; effective access is capped by the type."},
+    {"repo": "sebsto/wispr", "claim": "`env[\"NO_COLOR\"] == nil` treats an empty value as color enabled", "why_wrong": "`ProcessInfo` returns an empty string for a set but empty variable, not nil."},
+    {"repo": "sebsto/wispr", "claim": "`localizedDescription` loses the reason for bare POSIX errors", "why_wrong": "Measured: it includes the reason text."},
+    {"repo": "sebsto/wispr", "claim": "Caps Lock should block a bare Right Option press", "why_wrong": "Allowed on purpose; documented in the PR."},
+    {"repo": "sebsto/orthanc", "claim": "'Get Orthanc' button should open the browsers section", "why_wrong": "The label is about the app, and the button sends the user to the dmg."}
+  ]
+}

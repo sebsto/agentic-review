@@ -56,6 +56,20 @@ def main() -> int:
     }
     (work / "context.json").write_text(json.dumps(context, indent=2))
 
+    # CI result and earlier review discussion. Verifiers use them as evidence:
+    # a claim "this does not compile" is wrong if CI built this commit, and a
+    # point the author already answered with a reason must not be repeated.
+    (work / "ci.txt").write_text(
+        run_allow_fail(["gh", "pr", "checks", str(number), "-R", slug], work)
+    )
+    threads = json.loads(run(["gh", "api", f"repos/{slug}/pulls/{number}/comments?per_page=100"]))
+    discussion = [
+        {"id": c["id"], "reply_to": c.get("in_reply_to_id"), "author": c["user"]["login"],
+         "path": c["path"], "body": c["body"][:1500]}
+        for c in threads
+    ]
+    (work / "discussion.json").write_text(json.dumps(discussion, indent=2))
+
     if "--build" in sys.argv and (repo_dir / "Package.swift").exists():
         # The build log is input for the finders. A failing build is a finding, not an error here.
         build = run_allow_fail(
