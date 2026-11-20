@@ -23,7 +23,7 @@ Every agent output is checked against `schemas/`.
 
 ## Posting mode
 
-Set per repo in `repos.yml`:
+Set per repo in `repos.json`:
 
 - `auto`: the pipeline posts the review.
 - `draft`: the pipeline stops after stage 5 and shows the review. A person approves before it is posted.
