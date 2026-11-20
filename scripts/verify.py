@@ -31,15 +31,18 @@ def vote(model: str, context: str, finding: dict) -> dict:
     """Ask one verifier about one finding. Always return a valid verdict."""
     system = (ROOT / "prompts" / "verifier.md").read_text()
     user = f"{context}\n\n## Claimed defect\n```json\n{json.dumps(finding, indent=2)}\n```"
-    try:
-        verdict = extract_json(ask(model, system, user))
-        if isinstance(verdict, dict) and not check(verdict, load_schema("verdict")):
-            verdict["finding_id"] = finding["id"]
-            return {"model": model, **verdict}
-        raise ValueError("verdict does not match the schema")
-    except Exception as error:  # a failed vote must not stop the run
-        return {"model": model, "finding_id": finding["id"], "real": False,
-                "reason": f"verifier failed: {error}"}
+    error: Exception | None = None
+    for _attempt in range(2):  # one retry: models sometimes answer with prose instead of JSON
+        try:
+            verdict = extract_json(ask(model, system, user))
+            if isinstance(verdict, dict) and not check(verdict, load_schema("verdict")):
+                verdict["finding_id"] = finding["id"]
+                return {"model": model, **verdict}
+            raise ValueError("verdict does not match the schema")
+        except Exception as caught:  # a failed vote must not stop the run
+            error = caught
+    return {"model": model, "finding_id": finding["id"], "real": False,
+            "reason": f"verifier failed: {error}"}
 
 
 def decide(votes: list[dict]) -> bool:

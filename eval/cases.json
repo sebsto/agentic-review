@@ -1,0 +1,181 @@
+{
+  "description": "Eval cases. false-claim: verifiers must reject it. bug: a past confirmed defect, the pipeline must report it near expect.file:line (checked at commit sha). clean: merged with no review comments, the pipeline should report nothing.",
+  "cases": [
+    {
+      "id": "claim-wispr-113-1",
+      "kind": "false-claim",
+      "pr": "https://github.com/sebsto/wispr/pull/113",
+      "sha": "e96e31517",
+      "file": "Sources/WisprCLI/TerminalProgressReporter.swift",
+      "line": 59,
+      "claim": "`WisprCLI` compares `ProgressStyle` with `.interactive`, but this enum does not conform to `Equatable`; `Sendable` does not provide `==`, so the CLI target will fail to compile. Add the conformance as is already done for `ProgressPhase`. This issue also appears on line 60 of the same file.",
+      "in_prompt": true
+    },
+    {
+      "id": "claim-wispr-113-2",
+      "kind": "false-claim",
+      "pr": "https://github.com/sebsto/wispr/pull/113",
+      "sha": "608c30c7c",
+      "file": "Sources/WisprCLI/WisprCLI.swift",
+      "line": 86,
+      "claim": "`ProgressPreference` is an internal type, so this `public` member exceeds the enclosing type's access level and is rejected by Swift's access-control rules. The `ExpressibleByArgument` conformance is internal, so the witness should be internal as well.",
+      "in_prompt": true
+    },
+    {
+      "id": "claim-wispr-113-3",
+      "kind": "false-claim",
+      "pr": "https://github.com/sebsto/wispr/pull/113",
+      "sha": "608c30c7c",
+      "file": "Sources/WisprCLI/TerminalProgressReporter.swift",
+      "line": 204,
+      "claim": "**Not changed \u2014 the premise doesn't hold**, and I think the suggestion block may have been generated against a different line than intended: it's byte-identical to the line already there. `ProcessInfo.processInfo.environment` returns `\"\"`, not `nil`, for a set-but-empty variable. So with `NO_COLOR=` the lookup yields `\"\"`, `== nil` is `false`, and `useColor` becomes `false` \u2014 colour is already disabled. Requirement 4.7 is already satisfied for the empty case. Verified directly rather than from memory: ``` $ env -u NO_COLOR ./nocolor raw=nil ==nil:true useColorWouldBe:true $ NO_COLOR= ./nocolor raw=\"\" ==nil:false useColorWouldBe:false $ NO_COLOR=1 ./nocolor raw=\"1\" ==nil:false useColorWouldBe:false ``` So `NO_COLOR` set to anything at all \u2014 empty included \u2014 disables styling, and no spec wording change is needed either. Happy to add a regression test for the empty case if you'd like it pin",
+      "in_prompt": true
+    },
+    {
+      "id": "claim-wispr-111-4",
+      "kind": "false-claim",
+      "pr": "https://github.com/sebsto/wispr/pull/111",
+      "sha": "ff828fa11",
+      "file": "Sources/WisprCore/Utilities/FileAccess.swift",
+      "line": 102,
+      "claim": "**[Correctness / Low]** `classify` stores `error.localizedDescription` for the `.other` branch. For a Cocoa error that's the right string; for a bare `NSPOSIXErrorDomain` error `localizedDescription` collapses to a generic \"The operation couldn\u2019t be completed. (\u2026)\" that drops the errno name. Since permission denials (`EPERM`/`EACCES`) are already peeled off by `isPermissionDenied`, the residual `.other` set is small, so this is minor \u2014 but `(error as NSError)` domain+code would be strictly more diagnostic in a bug report. The message stays truthful either way, which is the design's stated bar. Advisory.",
+      "in_prompt": true
+    },
+    {
+      "id": "claim-maxi80-app-78-5",
+      "kind": "false-claim",
+      "pr": "https://github.com/maxi80-com/maxi80-app/pull/78",
+      "sha": "eac9d6b39",
+      "file": "Sources/Maxi80/RadioPlayerCoordinator.swift",
+      "line": 666,
+      "claim": "`placeholderArtworkFileURLs` is declared as `[String: String?]` to \u201cremember\u201d a `nil` materialization, but `Dictionary` treats assigning `nil` as removing the key. When `materializePlaceholderArtwork(_:)` returns `nil` (Android, missing asset, write failure), the cache never records the failure and the code retries on every publish, contradicting the comment and the memoization intent.",
+      "in_prompt": true
+    },
+    {
+      "id": "claim-maxi80-app-69-6",
+      "kind": "false-claim",
+      "pr": "https://github.com/maxi80-com/maxi80-app/pull/69",
+      "sha": "81bc82cc5",
+      "file": "Sources/Maxi80/SharedPlayer.swift",
+      "line": 53,
+      "claim": "`makeModernNowPlaying` takes plain `() -> Void` callbacks (not `@MainActor`), so these closures may be invoked off the main actor. Calling the coordinator\u2019s `@MainActor` method directly from here can trigger strict-concurrency violations and is unsafe if the framework invokes commands on a background queue. Hop to `@MainActor` explicitly (mirroring the bridged-path wiring below).",
+      "in_prompt": true
+    },
+    {
+      "id": "claim-maxi80-app-58-7",
+      "kind": "false-claim",
+      "pr": "https://github.com/maxi80-com/maxi80-app/pull/58",
+      "sha": "0a3e35c43",
+      "file": "Sources/Maxi80/CoverFlow/CarouselModel.swift",
+      "line": 38,
+      "claim": "`CarouselModel.selectedID` is an `AnyHashable`, but `isBrowsing` attempts to downcast it with `selectedID as? String`. That cast will not unwrap the underlying value; it should read `selectedID.base` (as the rest of the codebase does). As written, browsing detection can stay false even when a real cover is selected. This issue also appears in the following locations of the same file: - line 42 - line 54 - line 72",
+      "in_prompt": true
+    },
+    {
+      "id": "clean-wispr-101",
+      "kind": "clean",
+      "pr": "https://github.com/sebsto/wispr/pull/101",
+      "note": "merged with no review comments"
+    },
+    {
+      "id": "clean-wispr-92",
+      "kind": "clean",
+      "pr": "https://github.com/sebsto/wispr/pull/92",
+      "note": "merged with no review comments"
+    },
+    {
+      "id": "clean-wispr-71",
+      "kind": "clean",
+      "pr": "https://github.com/sebsto/wispr/pull/71",
+      "note": "merged with no review comments"
+    },
+    {
+      "id": "intent-wispr-109",
+      "kind": "false-claim",
+      "pr": "https://github.com/sebsto/wispr/pull/109",
+      "sha": "37970e59a",
+      "file": "Sources/WisprApp/Services/HotkeyMonitor.swift",
+      "line": 450,
+      "claim": "Right Option\u2019s \u201cignore when another modifier is already held\u201d check does not include Caps Lock (`.maskAlphaShift`). With Caps Lock active, a bare Right Option press will still trigger dictation, which appears to contradict the PR description\u2019s modifier-held rule.",
+      "in_prompt": false,
+      "note": "rejected because the author chose it on purpose; the reason is only in the later discussion"
+    },
+    {
+      "id": "intent-maxi80-app-79",
+      "kind": "false-claim",
+      "pr": "https://github.com/maxi80-com/maxi80-app/pull/79",
+      "sha": "762425f23",
+      "file": "Sources/Maxi80/RadioPlayerCoordinator.swift",
+      "line": 552,
+      "claim": "`PlaceholderCover.random()` reads `FeatureFlags.shared`, but the coordinator is already dependency-injected with a `featureFlags` store (and tests default to a fresh instance). Using the singleton here can make the `anniversary_cover` gate ignore the coordinator\u2019s injected flags and breaks test isolation.",
+      "in_prompt": false,
+      "note": "rejected because the author chose it on purpose; the reason is only in the later discussion"
+    },
+    {
+      "id": "bug-orthanc-10",
+      "kind": "bug",
+      "pr": "https://github.com/sebsto/orthanc/pull/10",
+      "sha": "a46f4e6e8",
+      "expect": [
+        {
+          "file": "backend/lambda/Sources/OrthancBackendCore/Models.swift",
+          "line": 321,
+          "window": 15,
+          "note": "unauthenticated error body echoes the raw request path"
+        },
+        {
+          "file": "make/web.mk",
+          "line": 40,
+          "window": 15,
+          "note": "`node --check` parses only its first file argument"
+        },
+        {
+          "file": "backend/infra/lib/orthanc-backend-stack.ts",
+          "line": 240,
+          "window": 15,
+          "note": "HttpApi has no throttling"
+        },
+        {
+          "file": "backend/lambda/Sources/OrthancBackendCore/Handlers.swift",
+          "line": 261,
+          "window": 15,
+          "note": "one allowed origin while the site answers on two"
+        },
+        {
+          "file": "website/license.js",
+          "line": 10,
+          "window": 15,
+          "note": "API_BASE pinned to the apex origin"
+        }
+      ]
+    },
+    {
+      "id": "bug-wispr-113",
+      "kind": "bug",
+      "pr": "https://github.com/sebsto/wispr/pull/113",
+      "sha": "e3b2d62e0",
+      "expect": [
+        {
+          "file": "Sources/WisprCore/Services/ProgressUpdate.swift",
+          "line": 58,
+          "window": 15,
+          "note": "new files are not compiled by the Xcode targets"
+        }
+      ]
+    },
+    {
+      "id": "bug-maxi80-backend-3",
+      "kind": "bug",
+      "pr": "https://github.com/maxi80-com/maxi80-backend-swift/pull/3",
+      "sha": "a20b9975a",
+      "expect": [
+        {
+          "file": "template.yaml",
+          "line": 212,
+          "window": 15,
+          "note": "S3 regional origin host fails the wildcard certificate"
+        }
+      ]
+    }
+  ]
+}

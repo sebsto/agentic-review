@@ -10,7 +10,6 @@ Stage 0 prepare, 1 five finders in parallel, 2 merge, 3 verify, 4 classify,
 
 import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import find
@@ -38,11 +37,8 @@ def main() -> int:
     work = Path(sys.argv[2]).resolve()
     flags = [a for a in sys.argv[3:] if a in ("--build", "--approve")]
     script("prepare.py", url, str(work), *[f for f in flags if f == "--build"])
-    with ThreadPoolExecutor(max_workers=len(find.FINDERS)) as pool:
-        for name, counts in zip(
-            find.FINDERS, pool.map(lambda n: find.run_finder(work, n), find.FINDERS)
-        ):
-            print(f"{name}: kept {counts[0]}, rejected {counts[1]}")
+    for name, result in find.run_finders(work).items():
+        print(f"{name}: {result}" if isinstance(result, str) else f"{name}: kept {result[0]}, rejected {result[1]}")
     script("merge.py", str(work))
     script("verify.py", str(work))
     script("classify.py", str(work))

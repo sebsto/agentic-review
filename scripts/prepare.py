@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stage 0: check out a PR and collect the facts the agents need.
 
-Usage: prepare.py <PR URL> <work dir> [--build]
+Usage: prepare.py <PR URL> <work dir> [--build] [--at <sha>]
 
 Writes into <work dir>:
   repo/          the PR head checked out
@@ -11,6 +11,7 @@ Writes into <work dir>:
 """
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -38,9 +39,33 @@ def main() -> int:
     if not repo_dir.exists():
         run(["gh", "repo", "clone", slug, str(repo_dir), "--", "--filter=blob:none"])
     run(["git", "fetch", "-q", "origin", f"pull/{number}/head"], cwd=repo_dir)
-    run(["git", "checkout", "-q", "--detach", meta["headRefOid"]], cwd=repo_dir)
-
-    (work / "pr.diff").write_text(run(["gh", "pr", "diff", str(number), "-R", slug]))
+    at = sys.argv[sys.argv.index("--at") + 1] if "--at" in sys.argv else None
+    if at:
+        # Eval mode: look at the PR as it was at an earlier commit. The diff is
+        # taken against the fork point, and CI and the later discussion are
+        # left out, because they would reveal the answer.
+        if subprocess.run(["git", "cat-file", "-e", at], cwd=repo_dir, check=False).returncode:
+            run(["git", "fetch", "-q", "origin", at], cwd=repo_dir)
+        run(["git", "fetch", "-q", "origin", meta["baseRefName"]], cwd=repo_dir)
+        run(["git", "checkout", "-q", "--detach", at], cwd=repo_dir)
+        head = run(["git", "rev-parse", "HEAD"], cwd=repo_dir).strip()
+        fork = run(["git", "merge-base", head, f"origin/{meta['baseRefName']}"], cwd=repo_dir).strip()
+        if fork == head:
+            # The commit is already on the base branch (a merged PR). Start from
+            # the parent of the PR's first commit instead.
+            first = json.loads(
+                run(["gh", "pr", "view", str(number), "-R", slug, "--json", "commits"])
+            )["commits"][0]["oid"]
+            fork = run(["git", "rev-parse", f"{first}^"], cwd=repo_dir).strip()
+        (work / "pr.diff").write_text(run(["git", "diff", f"{fork}..{head}"], cwd=repo_dir))
+        meta["headRefOid"] = head
+        meta["baseRefOid"] = fork
+        meta["files"] = [
+            {"path": p} for p in run(["git", "diff", "--name-only", f"{fork}..{head}"], cwd=repo_dir).split()
+        ]
+    else:
+        run(["git", "checkout", "-q", "--detach", meta["headRefOid"]], cwd=repo_dir)
+        (work / "pr.diff").write_text(run(["gh", "pr", "diff", str(number), "-R", slug]))
 
     context = {
         "repo": slug,
@@ -59,10 +84,13 @@ def main() -> int:
     # CI result and earlier review discussion. Verifiers use them as evidence:
     # a claim "this does not compile" is wrong if CI built this commit, and a
     # point the author already answered with a reason must not be repeated.
-    (work / "ci.txt").write_text(
-        run_allow_fail(["gh", "pr", "checks", str(number), "-R", slug], work)
+    threads = [] if at else json.loads(
+        run(["gh", "api", f"repos/{slug}/pulls/{number}/comments?per_page=100"])
     )
-    threads = json.loads(run(["gh", "api", f"repos/{slug}/pulls/{number}/comments?per_page=100"]))
+    if not at:
+        (work / "ci.txt").write_text(
+            run_allow_fail(["gh", "pr", "checks", str(number), "-R", slug], work)
+        )
     discussion = [
         {"id": c["id"], "reply_to": c.get("in_reply_to_id"), "author": c["user"]["login"],
          "path": c["path"], "body": c["body"][:1500]}

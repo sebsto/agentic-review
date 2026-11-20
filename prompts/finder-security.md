@@ -14,6 +14,12 @@ Look for:
 - Access: missing authorization checks, overly broad entitlements, IAM policies
   with `*` actions or resources.
 - Input limits: unbounded reads, no size or time limit on untrusted data.
+- Reflection: untrusted input (a request path, a header, a query value) echoed
+  into a response body, header or page, even in an error message.
+- Cross-origin rules: an allowed-origin check that covers one origin when the
+  site answers on several, wildcard origins, missing `Vary: Origin`.
+- TLS names: a host name that the certificate does not cover, such as a dotted
+  bucket name under a wildcard certificate.
 
 Do not report: style, naming, cleanup, missing docs, or anything you cannot
 tie to a specific line in the diff. Do not report code the diff does not touch.

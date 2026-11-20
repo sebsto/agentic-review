@@ -5,6 +5,7 @@ Cloud cost (only when the project uses cloud services such as AWS; skip it other
 - Polling where an event or push would do, loops that call a paid API per item
   (N+1 calls), missing pagination or batching, missing caching.
 - Unbounded retries, no backoff, no timeouts, large payloads sent repeatedly.
+- A public endpoint with no rate limit or throttle, so a flood becomes a bill.
 - Oversized resources, always-on resources that could be on demand, missing
   log retention, missing data expiry.
 User experience:

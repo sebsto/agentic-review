@@ -9,6 +9,9 @@ Look for:
 - Wrong state handling: state not reset, stale caches, resources not released,
   partial updates when a step fails.
 - Behaviour that contradicts the pull request description or the doc comment.
+- Build, release and CI scripts (Makefile, shell, workflow files) that do not do
+  what they appear to: a tool that reads only its first argument, an exit code
+  lost in a pipe, a preflight that can never pass, a path that does not exist.
 - Tests that cannot fail, or that no longer test what their name says.
 - Anything the build log reports as an error or a logic warning.
 
