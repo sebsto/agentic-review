@@ -115,6 +115,17 @@ def run_case(case: dict, scratch: Path) -> dict:
         return {"id": case["id"], "pass": False, "error": str(error)[:300]}
 
 
+def merge_results(old: list[dict], new: list[dict]) -> list[dict]:
+    """Return old results with each new result replacing the one that has its id.
+
+    A run of a few cases must not erase the results of cases it did not run.
+    Results of ids that are new are added at the end.
+    """
+    replaced = {r["id"]: r for r in new}
+    kept = [replaced.pop(r["id"], r) for r in old]
+    return kept + list(replaced.values())
+
+
 def main() -> int:
     if len(sys.argv) < 3:
         print(__doc__)
@@ -139,7 +150,9 @@ def main() -> int:
         print(f"{label}: {passed}/{len(mine)}")
         for r in mine:
             print(f"  {'ok  ' if r['pass'] else 'FAIL'} {r['id']} " + json.dumps({k: v for k, v in r.items() if k not in ('id', 'pass')}))
-        (ROOT / "eval" / "results" / f"{kind}.json").write_text(json.dumps(mine, indent=2))
+        path = ROOT / "eval" / "results" / f"{kind}.json"
+        old = json.loads(path.read_text()) if path.exists() else []
+        path.write_text(json.dumps(merge_results(old, mine), indent=2))
     return 0
 
 
