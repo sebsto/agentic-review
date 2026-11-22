@@ -1,0 +1,27 @@
+[
+  {
+    "id": "bug-hummingbird-908",
+    "pass": false,
+    "defects": 1,
+    "found_by_finders": 0,
+    "reported": 0,
+    "missed": [
+      "produceMore can run between waitForProduceMore and the read of currentProduceMoreCount, so the count is read outside the lock"
+    ],
+    "kept": [],
+    "failed_finders": []
+  },
+  {
+    "id": "bug-service-lifecycle-199",
+    "pass": true,
+    "defects": 1,
+    "found_by_finders": 1,
+    "reported": 1,
+    "missed": [],
+    "kept": [
+      "Sources/ServiceLifecycle/ServiceGroup.swift:350 Mutable `services`/`gracefulShutdownManagers` arrays mutated concurren",
+      "Sources/ServiceLifecycle/ServiceGroup.swift:336 Mutable local vars captured and mutated inside a @Sendable task-group "
+    ],
+    "failed_finders": []
+  }
+]
