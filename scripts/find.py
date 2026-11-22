@@ -98,6 +98,22 @@ def build_input(work: Path) -> str:
 FINDERS = ["concurrency", "correctness", "modernity", "security", "cost-ux", "tests", "consistency"]
 
 
+def as_finding_list(answer) -> list:
+    """Return the findings from a model answer.
+
+    The prompt asks for a JSON list. Models sometimes wrap it in an object such
+    as {"findings": [...]}, or answer with a single finding object.
+    """
+    if isinstance(answer, list):
+        return answer
+    if isinstance(answer, dict):
+        for value in answer.values():
+            if isinstance(value, list):
+                return value
+        return [answer] if "file" in answer else []
+    return []
+
+
 def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, int]:
     """Run one finder and write its files. Return (kept, rejected) counts."""
     system = (ROOT / "prompts" / "finder-common.md").read_text() + "\n\n" + (
@@ -117,7 +133,10 @@ def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, 
     visible = diff_lines((work / "pr.diff").read_text())
 
     kept, rejected = [], []
-    for item in answer:
+    for item in as_finding_list(answer):
+        if not isinstance(item, dict):
+            rejected.append({"finding": item, "problems": ["not a JSON object"]})
+            continue
         item = {k: v for k, v in item.items() if v is not None}  # null means "not given"
         problems = check(item, schema)
         if not problems and (item["file"], item["line"]) not in visible:

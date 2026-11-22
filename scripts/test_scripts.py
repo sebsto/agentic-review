@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import mode_for, parse_pr_url  # noqa: E402
 from classify import added_lines  # noqa: E402
+from find import as_finding_list  # noqa: E402
 from llm import extract_json  # noqa: E402
 from merge import merge  # noqa: E402
 from report import build_review  # noqa: E402
@@ -97,6 +98,20 @@ class AllFailedTests(unittest.TestCase):
 
     def test_one_success_is_not_failure(self):
         self.assertFalse(all_failed({"a": "boom", "b": (0, 1)}))
+
+
+class FindingListTests(unittest.TestCase):
+    def test_list_is_kept(self):
+        self.assertEqual(as_finding_list([{"file": "a"}]), [{"file": "a"}])
+
+    def test_wrapped_list(self):
+        self.assertEqual(as_finding_list({"findings": [{"file": "a"}]}), [{"file": "a"}])
+
+    def test_single_finding_object(self):
+        self.assertEqual(as_finding_list({"file": "a", "line": 1}), [{"file": "a", "line": 1}])
+
+    def test_object_without_findings(self):
+        self.assertEqual(as_finding_list({"summary": "none"}), [])
 
 
 if __name__ == "__main__":
