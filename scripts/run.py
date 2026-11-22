@@ -29,6 +29,11 @@ def script(name: str, *args: str) -> None:
         raise SystemExit(f"{name} failed")
 
 
+def all_failed(results: dict) -> bool:
+    """True when every finder returned an error string, so "0 findings" would be meaningless."""
+    return bool(results) and all(isinstance(r, str) for r in results.values())
+
+
 def main() -> int:
     if len(sys.argv) < 3:
         print(__doc__)
@@ -37,8 +42,11 @@ def main() -> int:
     work = Path(sys.argv[2]).resolve()
     flags = [a for a in sys.argv[3:] if a in ("--build", "--approve")]
     script("prepare.py", url, str(work), *[f for f in flags if f == "--build"])
-    for name, result in find.run_finders(work).items():
+    results = find.run_finders(work)
+    for name, result in results.items():
         print(f"{name}: {result}" if isinstance(result, str) else f"{name}: kept {result[0]}, rejected {result[1]}")
+    if all_failed(results):
+        raise SystemExit("every finder failed; refusing to report this PR as clean")
     script("merge.py", str(work))
     script("verify.py", str(work))
     script("classify.py", str(work))

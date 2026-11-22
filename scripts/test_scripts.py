@@ -11,6 +11,7 @@ from classify import added_lines  # noqa: E402
 from llm import extract_json  # noqa: E402
 from merge import merge  # noqa: E402
 from report import build_review  # noqa: E402
+from run import all_failed  # noqa: E402
 from verify import decide  # noqa: E402
 from post import diff_lines  # noqa: E402
 from validate import check, load_schema  # noqa: E402
@@ -88,6 +89,14 @@ class Tests(unittest.TestCase):
         self.assertTrue(review["body"].startswith("1 blocking, 0 nit, 1 pre-existing."))
         self.assertEqual(len(review["comments"]), 1)
         self.assertIn("```suggestion\nfix()\n```", review["comments"][0]["body"])
+
+
+class AllFailedTests(unittest.TestCase):
+    def test_all_errors_is_failure(self):
+        self.assertTrue(all_failed({"a": "boom", "b": "boom"}))
+
+    def test_one_success_is_not_failure(self):
+        self.assertFalse(all_failed({"a": "boom", "b": (0, 1)}))
 
 
 if __name__ == "__main__":
