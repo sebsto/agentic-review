@@ -59,7 +59,7 @@ def run_claim(case: dict, scratch: Path) -> dict:
         "title": case["claim"][:120], "explanation": case["claim"], "evidence": case["claim"],
     }
     context = build_input(work)
-    votes = [vote(m, context, finding) for m in VERIFIERS]
+    votes = [vote(m, context, finding, work / "repo") for m in VERIFIERS]
     # A verifier that failed to answer is not a rejection; it must not make the case pass.
     valid = [v for v in votes if not v["reason"].startswith("verifier failed")]
     return {

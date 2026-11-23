@@ -16,8 +16,7 @@ from pathlib import Path
 
 from common import ROOT
 from find import DEFAULT_MODEL
-from llm import ask, extract_json
-from validate import check, load_schema
+from agent import ClassifiedList, run_agent
 
 
 def added_lines(diff: str) -> set[tuple[str, int]]:
@@ -63,9 +62,8 @@ def main() -> int:
     ]
     system = (ROOT / "prompts" / "classifier.md").read_text()
     user = f"## Diff\n```diff\n{(work / 'pr.diff').read_text()}\n```\n\n## Findings\n{json.dumps(brief, indent=2)}"
-    answer = extract_json(ask(DEFAULT_MODEL, system, user))
-    schema = load_schema("classified")
-    by_id = {a["finding_id"]: a for a in answer if not check(a, schema)}
+    answer = run_agent(DEFAULT_MODEL, system, user, ClassifiedList, repo=work / "repo")
+    by_id = {a.finding_id: {"class": a.kind, "reason": a.reason} for a in answer.items}
     out = []
     for f in verified:
         verdict = by_id.get(f["id"], {"class": "nit", "reason": "classifier gave no valid answer"})

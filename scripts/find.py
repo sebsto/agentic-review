@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 from common import ROOT
-from llm import ask, extract_json
+from agent import Findings, run_agent
 from post import diff_lines
 from validate import check, load_schema
 
@@ -98,22 +98,6 @@ def build_input(work: Path) -> str:
 FINDERS = ["concurrency", "correctness", "modernity", "security", "cost-ux", "tests", "consistency"]
 
 
-def as_finding_list(answer) -> list:
-    """Return the findings from a model answer.
-
-    The prompt asks for a JSON list. Models sometimes wrap it in an object such
-    as {"findings": [...]}, or answer with a single finding object.
-    """
-    if isinstance(answer, list):
-        return answer
-    if isinstance(answer, dict):
-        for value in answer.values():
-            if isinstance(value, list):
-                return value
-        return [answer] if "file" in answer else []
-    return []
-
-
 def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, int]:
     """Run one finder and write its files. Return (kept, rejected) counts."""
     system = (ROOT / "prompts" / "finder-common.md").read_text() + "\n\n" + (
@@ -121,9 +105,9 @@ def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, 
     ).read_text()
     prompt = build_input(work)
     answer = None
-    for _attempt in range(2):  # one retry: a call can time out or return malformed JSON
+    for _attempt in range(2):  # one retry: a call can time out or return an invalid answer
         try:
-            answer = extract_json(ask(model, system, prompt, timeout=600))
+            answer = run_agent(model, system, prompt, Findings, repo=work / "repo", timeout=600)
             break
         except Exception as caught:
             error = caught
@@ -133,11 +117,7 @@ def run_finder(work: Path, name: str, model: str = DEFAULT_MODEL) -> tuple[int, 
     visible = diff_lines((work / "pr.diff").read_text())
 
     kept, rejected = [], []
-    for item in as_finding_list(answer):
-        if not isinstance(item, dict):
-            rejected.append({"finding": item, "problems": ["not a JSON object"]})
-            continue
-        item = {k: v for k, v in item.items() if v is not None}  # null means "not given"
+    for item in (f.model_dump(exclude_none=True) for f in answer.findings):
         problems = check(item, schema)
         if not problems and (item["file"], item["line"]) not in visible:
             problems = ["line is not in the diff"]

@@ -9,8 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import mode_for, parse_pr_url  # noqa: E402
 from classify import added_lines  # noqa: E402
 from eval import merge_results  # noqa: E402
-from find import as_finding_list  # noqa: E402
-from llm import extract_json  # noqa: E402
+from agent import ClassifiedList, Findings, repo_tools  # noqa: E402
 from merge import merge  # noqa: E402
 from report import build_review  # noqa: E402
 from run import all_failed  # noqa: E402
@@ -48,10 +47,6 @@ class Tests(unittest.TestCase):
             diff_lines(DIFF),
             {("A.swift", 1), ("A.swift", 2), ("A.swift", 3), ("A.swift", 4)},
         )
-
-    def test_extract_json(self) -> None:
-        self.assertEqual(extract_json('```json\n[{"a": 1}]\n```'), [{"a": 1}])
-        self.assertEqual(extract_json("[]"), [])
 
     def test_finding_schema(self) -> None:
         schema = load_schema("finding")
@@ -101,18 +96,35 @@ class AllFailedTests(unittest.TestCase):
         self.assertFalse(all_failed({"a": "boom", "b": (0, 1)}))
 
 
-class FindingListTests(unittest.TestCase):
-    def test_list_is_kept(self):
-        self.assertEqual(as_finding_list([{"file": "a"}]), [{"file": "a"}])
+class AgentTypesTests(unittest.TestCase):
+    def test_classified_accepts_the_class_key(self):
+        answer = ClassifiedList.model_validate({"items": [{"finding_id": "a", "class": "nit", "reason": "r"}]})
+        self.assertEqual(answer.items[0].kind, "nit")
 
-    def test_wrapped_list(self):
-        self.assertEqual(as_finding_list({"findings": [{"file": "a"}]}), [{"file": "a"}])
+    def test_finding_rejects_unknown_finder(self):
+        bad = {"id": "a", "finder": "style", "file": "A.swift", "line": 1, "title": "t", "explanation": "e", "evidence": "x"}
+        with self.assertRaises(ValueError):
+            Findings.model_validate({"findings": [bad]})
 
-    def test_single_finding_object(self):
-        self.assertEqual(as_finding_list({"file": "a", "line": 1}), [{"file": "a", "line": 1}])
 
-    def test_object_without_findings(self):
-        self.assertEqual(as_finding_list({"summary": "none"}), [])
+class RepoToolsTests(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        (root / "A.swift").write_text("let a = 1\nlet b = 2\n")
+        self.read_file, self.grep, self.list_dir = repo_tools(root)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_read_and_grep(self):
+        self.assertIn("2: let b = 2", self.read_file("A.swift"))
+        self.assertIn("A.swift:2", self.grep("let b"))
+
+    def test_paths_outside_the_repo_are_refused(self):
+        with self.assertRaises(ValueError):
+            self.read_file("../../etc/passwd")
 
 
 class MergeResultsTests(unittest.TestCase):
