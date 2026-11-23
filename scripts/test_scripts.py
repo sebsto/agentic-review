@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import mode_for, parse_pr_url  # noqa: E402
 from classify import added_lines  # noqa: E402
+from eval import merge_results  # noqa: E402
 from find import as_finding_list  # noqa: E402
 from llm import extract_json  # noqa: E402
 from merge import merge  # noqa: E402
@@ -112,6 +113,16 @@ class FindingListTests(unittest.TestCase):
 
     def test_object_without_findings(self):
         self.assertEqual(as_finding_list({"summary": "none"}), [])
+
+
+class MergeResultsTests(unittest.TestCase):
+    def test_new_result_replaces_same_id_and_keeps_others(self):
+        old = [{"id": "a", "pass": False}, {"id": "b", "pass": True}]
+        new = [{"id": "a", "pass": True}, {"id": "c", "pass": True}]
+        self.assertEqual(
+            merge_results(old, new),
+            [{"id": "a", "pass": True}, {"id": "b", "pass": True}, {"id": "c", "pass": True}],
+        )
 
 
 if __name__ == "__main__":

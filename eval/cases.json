@@ -180,6 +180,52 @@
           "note": "S3 regional origin host fails the wildcard certificate"
         }
       ]
+    },
+    {
+      "id": "bug-hummingbird-908",
+      "kind": "bug",
+      "pr": "https://github.com/hummingbird-project/hummingbird/pull/908",
+      "sha": "fe1173b27c880290a823e5237dde4f53a9593130",
+      "expect": [
+        {
+          "file": "Sources/HummingbirdCore/Request/RequestBody.swift",
+          "line": 291,
+          "window": 15,
+          "note": "produceMore can run between waitForProduceMore and the read of currentProduceMoreCount, so the count is read outside the lock"
+        }
+      ]
+    },
+    {
+      "id": "bug-service-lifecycle-199",
+      "kind": "bug",
+      "pr": "https://github.com/swift-server/swift-service-lifecycle/pull/199",
+      "sha": "7dce0c3585e32f16bcc60c3614c2b7760f63e4c0",
+      "expect": [
+        {
+          "file": "Sources/ServiceLifecycle/ServiceGroup.swift",
+          "line": 352,
+          "window": 20,
+          "note": "the task group is escaped into a child task that mutates services and gracefulShutdownManagers from another task, a data race in Swift 6"
+        }
+      ]
+    },
+    {
+      "id": "clean-hummingbird-934",
+      "kind": "clean",
+      "pr": "https://github.com/hummingbird-project/hummingbird/pull/934",
+      "note": "merged with no inline review comments"
+    },
+    {
+      "id": "clean-hummingbird-922",
+      "kind": "clean",
+      "pr": "https://github.com/hummingbird-project/hummingbird/pull/922",
+      "note": "merged with no inline review comments"
+    },
+    {
+      "id": "clean-service-lifecycle-250",
+      "kind": "clean",
+      "pr": "https://github.com/swift-server/swift-service-lifecycle/pull/250",
+      "note": "merged with no inline review comments"
     }
   ]
 }

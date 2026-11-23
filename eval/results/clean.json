@@ -13,5 +13,27 @@
     "id": "clean-wispr-71",
     "pass": true,
     "false_alarms": []
+  },
+  {
+    "id": "clean-hummingbird-934",
+    "pass": false,
+    "false_alarms": [
+      "Sources/Hummingbird/Files/LocalFileSystem.swift:112 Symlink restriction only checks the final path component, not intermed"
+    ],
+    "failed_finders": [
+      "consistency"
+    ]
+  },
+  {
+    "id": "clean-hummingbird-922",
+    "pass": true,
+    "false_alarms": [],
+    "failed_finders": []
+  },
+  {
+    "id": "clean-service-lifecycle-250",
+    "pass": true,
+    "false_alarms": [],
+    "failed_finders": []
   }
 ]
